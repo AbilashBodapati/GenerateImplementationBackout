@@ -6,7 +6,9 @@ import time
 from pathlib import Path
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
-
+from urllib.request import urlopen as uReq
+from bs4 import BeautifulSoup as soup
+import json
 
 class githubAccess:
     def construct(self, username, password):
@@ -46,7 +48,38 @@ class githubAccess:
         # Once the credentials are passed in, click on the submit button
         self.driver.find_elements_by_xpath("//input[@name='commit']")[0].click()
 
+    def getFiles(self, repo):
+        
+        fileName = []
+        URL = "https://github.com/AbilashBodapati/%s" %(repo)
+        
+        uClient = uReq(URL)
+        page_html = uClient.read()
+        uClient.close()
 
+        page_soup = soup(page_html, "html.parser")
+
+        job_elems = page_soup.findAll('div', {"class": "Details-content--hidden-not-important js-navigation-container js-active-navigation-container d-md-block"})
+        
+        print(job_elems)
+        
+
+        
+
+        #return fileName
+
+    def getContent(self, listRepo):
+        self.driver.find_element_by_xpath("//div[@id='repos-container']/ul/li/div/a[@href='/AbilashBodapati/ProjectCreation']").click()
+        for repo in listRepo:
+            self.getFiles(repo)
+
+        self.driver.find_element_by_xpath("//div[@role='grid'][@aria-labelledby='files']/div[3]/div[@role='rowheader']/span/a[@href='/AbilashBodapati/ProjectCreation/blob/master/CreateGitRepo.py']").click()
+        time.sleep(2)
+        
+    def exitApplication(self):
+        # Exit out of the window after the repo is created
+        time.sleep(2) # Let the user actually see something!
+        self.driver.quit()
 
 class generateImplementationBackout:
     # Constructor for this class that store the command line arguments
@@ -103,10 +136,10 @@ class generateImplementationBackout:
 if __name__ == "__main__":
 
      #createProject(sys.argv[1:])
-    generateImplementationBackoutFiles = generateImplementationBackout(sys.argv[1:])
+    #generateImplementationBackoutFiles = generateImplementationBackout(sys.argv[1:])
     
-    generateImplementationBackoutFiles.createNewDirectory()
-    generateImplementationBackoutFiles.createFiles()
+    #generateImplementationBackoutFiles.createNewDirectory()
+    #generateImplementationBackoutFiles.createFiles()
 
     # Run a Separate python script to create a git repo on github
     #os.system("python3 ../PrivateFiles/CreateGitRepo.py %s" %(self.parent_folder_name))
@@ -115,3 +148,9 @@ if __name__ == "__main__":
     CreateGitRepo.construct(sys.argv[2], sys.argv[3])
     CreateGitRepo.startChromeService()
     CreateGitRepo.accessGithub()
+
+    CreateGitRepo.getContent(['ProjectCreation'])
+
+    CreateGitRepo.exitApplication()
+
+    
